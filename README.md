@@ -38,6 +38,11 @@ mmseqs makepaddedseqdb uniref100.fasta.db uniref100.fasta.db_padded
 ```
 ## MCP uses cases
 
+### Export the `MMSEQS2_DB_PATH` in the environment
+```shell
+export MMSEQS2_DB_PATH=/mnt/data/data_repository/bio-seq/protein/uniref100/uniref100.fasta.db_padded
+```
+
 ### Debug with MCP inspector
 ```shell
 # Start MCP server
@@ -53,16 +58,25 @@ Config the server, pick the tool, enter the parameters and run the MCP service.
 ### Call MCP tool in Claude code
 ```shell
 fastmcp install claude-code src/mmseqs2_mcp.py --python ./env/bin/python
+
+# remove this mcp service from claude
+claude mcp list
+claude mcp remove mmseqs2
 ```
-Prompts in claude code:
+### Call MCP tool in Gemini-cli
+```shell
+fastmcp install gemini-cli src/mmseqs2_mcp.py --python ./env/bin/python
+
+# remove this mcp service from claude
+gemini mcp list
+gemini mcp remove mmseqs2
+```
+### Prompts to call MMseqs2 in claude code or gemini-cli:
 
 ```text
-> Can you create the msa for DHFR sequence using mmseqs2 mcp, the sequence 
-is: MISLIAALAVDRVIGMENAMPWNLPADLAWFKRNTLNKPVIMGRHTWESIGRPLPGRKNIILSSQPGTDDRVT
-WVKSVDEAIAACGDVPEIMVIGGGRVYEQFLPKAQKLYLTHIDAEVEGDTHFPDYEPDDWESVFSEFHDADAQNSHS
-YCFEILERR 
+> Can you create the msa for DHFR sequence using mmseqs2 mcp, the sequence is: MISLIAALAVDRVIGMENAMPWNLPADLAWFKRNTLNKPVIMGRHTWESIGRPLPGRKNIILSSQPGTDDRVTWVKSVDEAIAACGDVPEIMVIGGGRVYEQFLPKAQKLYLTHIDAEVEGDTHFPDYEPDDWESVFSEFHDADAQNSHSYCFEILERR 
+This is only for test purpose, so only 1 iteration is enough.
 ```
-
 ## Local use cases
 
 ### Esay search to get blastp like statistics (optional)

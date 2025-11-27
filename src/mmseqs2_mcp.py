@@ -19,8 +19,13 @@ from fastmcp import FastMCP
 # Server definition
 mcp = FastMCP(name="mmseqs2")
 
-# Default paths
-DEFAULT_DB_PATH = "/mnt/data/data_repository/bio-seq/protein/uniref100/uniref100.fasta.db_padded"
+# Database path - load from environment variable or use default
+MMSEQS2_DB_PATH = os.path.expanduser(
+    os.environ.get(
+        "MMSEQS2_DB_PATH",
+        "~/.db/protein/uniref100/uniref100.fasta.db_padded"
+    )
+)
 
 # Find mmseqs2 binary
 # Try to find mmseqs in the environment or system PATH
@@ -42,7 +47,7 @@ def _generate_msa_impl(
     fasta_file: Optional[str] = None,
     sequence_name: str = "query",
     output_dir: Optional[str] = None,
-    database_path: str = DEFAULT_DB_PATH,
+    database_path: Optional[str] = None,
     gpu: bool = True,
     threads: int = 64,
     sensitivity: float = 7.5,
@@ -64,7 +69,8 @@ def _generate_msa_impl(
                    Either sequence or fasta_file must be provided.
         sequence_name: Name/identifier for the sequence (used if sequence is provided).
         output_dir: Directory to store output files. If None, uses a temporary directory.
-        database_path: Path to the MMseqs2 database (default: UniRef100 padded).
+        database_path: Path to the MMseqs2 database. If None, uses MMSEQS2_DB_PATH
+                      environment variable or defaults to UniRef100 padded database.
         gpu: Use GPU acceleration for search (default: True).
         threads: Number of CPU threads to use (default: 64).
         sensitivity: Sensitivity parameter for search (default: 7.5, higher = more sensitive).
@@ -84,6 +90,10 @@ def _generate_msa_impl(
         ...     sequence_name="DHFR"
         ... )
     """
+    # Use global database path if not specified
+    if database_path is None:
+        database_path = MMSEQS2_DB_PATH
+
     # Validate inputs
     if sequence is None and fasta_file is None:
         raise ValueError("Either 'sequence' or 'fasta_file' must be provided")
@@ -224,7 +234,7 @@ def generate_msa(
     fasta_file: Optional[str] = None,
     sequence_name: str = "query",
     output_dir: Optional[str] = None,
-    database_path: str = DEFAULT_DB_PATH,
+    database_path: Optional[str] = None,
     gpu: bool = True,
     threads: int = 64,
     sensitivity: float = 7.5,
@@ -254,7 +264,7 @@ def generate_msa(
 def generate_msa_from_file(
     fasta_file: str,
     output_dir: str,
-    database_path: str = DEFAULT_DB_PATH,
+    database_path: Optional[str] = None,
     gpu: bool = True,
     threads: int = 64,
     sensitivity: float = 7.5,
@@ -271,7 +281,8 @@ def generate_msa_from_file(
     Args:
         fasta_file: Path to a FASTA file containing the query sequence(s).
         output_dir: Directory to store output files (will be created if it doesn't exist).
-        database_path: Path to the MMseqs2 database (default: UniRef100 padded).
+        database_path: Path to the MMseqs2 database. If None, uses MMSEQS2_DB_PATH
+                      environment variable or defaults to UniRef100 padded database.
         gpu: Use GPU acceleration for search (default: True).
         threads: Number of CPU threads to use (default: 64).
         sensitivity: Sensitivity parameter for search (default: 7.5).
