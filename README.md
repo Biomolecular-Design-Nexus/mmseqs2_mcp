@@ -55,21 +55,15 @@ npx @modelcontextprotocol/inspector
 Config the server, pick the tool, enter the parameters and run the MCP service.
 ![MCP inspector example](./mcp_inspector.png)
 
-### Call MCP tool in Claude code
+### Install MCP tool
 ```shell
-fastmcp install claude-code src/mmseqs2_mcp.py --python ./env/bin/python
+fastmcp install claude-code too-mcps/mmseqs2_mcp/src/mmseqs2_mcp.py --python ./env/bin/python
+fastmcp install gemini-cli too-mcps/mmseqs2_mcp/src/mmseqs2_mcp.py --python ./env/bin/python
 
 # remove this mcp service from claude
 claude mcp list
 claude mcp remove mmseqs2
-```
-### Call MCP tool in Gemini-cli
-```shell
-fastmcp install gemini-cli src/mmseqs2_mcp.py --python ./env/bin/python
-
-# remove this mcp service from claude
 gemini mcp list
-gemini mcp remove mmseqs2
 ```
 ### Prompts to call MMseqs2 in claude code or gemini-cli:
 
