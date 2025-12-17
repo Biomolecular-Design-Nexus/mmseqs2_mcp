@@ -17,10 +17,10 @@ UNIREF100_DIR="/mnt/data/data_repository/bio-seq/protein/uniref100"
 # Search for MSA given a query fasta file
 
 # Step 1: Create query database
-# mmseqs createdb examples/DHFR.fasta examples/DHFR_db 
+mmseqs createdb examples/DHFR.fasta examples/DHFR_db 
 
 # Step 2: Search (creates result DB instead of m8)
-# mmseqs search examples/DHFR_db $UNIREF100_DIR/uniref100.fasta.db_padded examples/DHFR_result_db examples/tmp --gpu 1 --threads 64
+mmseqs search examples/DHFR_db $UNIREF100_DIR/uniref100.fasta.db_padded examples/DHFR_result_db examples/tmp --gpu 1 --threads 64
 # Increase the number of hits with -s (sensitivity) parameter, --num-iterations, -e (e-value), --max-seqs parameters to achieve a matching performance with Jackhmmer
 # mmseqs search examples/DHFR_db $UNIREF100_DIR/uniref100.fasta.db_padded examples/DHFR_result_db examples/tmp --gpu 1 --threads 64 -s 7.5 --num-iterations 10 -e 0.001 --max-seqs 100000
 

@@ -49,6 +49,7 @@ def _generate_msa_impl(
     output_dir: Optional[str] = None,
     database_path: Optional[str] = None,
     gpu: bool = True,
+    cuda_device: Optional[int] = None,
     threads: int = 64,
     sensitivity: float = 7.5,
     num_iterations: int = 10,
@@ -72,6 +73,8 @@ def _generate_msa_impl(
         database_path: Path to the MMseqs2 database. If None, uses MMSEQS2_DB_PATH
                       environment variable or defaults to UniRef100 padded database.
         gpu: Use GPU acceleration for search (default: True).
+        cuda_device: CUDA device number to use (default: None, uses all available devices).
+                    Sets CUDA_VISIBLE_DEVICES environment variable during search.
         threads: Number of CPU threads to use (default: 64).
         sensitivity: Sensitivity parameter for search (default: 7.5, higher = more sensitive).
         num_iterations: Number of search iterations (default: 10).
@@ -163,8 +166,14 @@ def _generate_msa_impl(
             search_cmd.insert(3, "--gpu")
             search_cmd.insert(4, "1")
 
+        # Prepare environment for CUDA device selection
+        search_env = os.environ.copy()
+        if cuda_device is not None:
+            search_env["CUDA_VISIBLE_DEVICES"] = str(cuda_device)
+            print(f"  Using CUDA device: {cuda_device}")
+
         print(f"  Command: {' '.join(search_cmd)}")
-        result = subprocess.run(search_cmd, check=True, capture_output=True, text=True)
+        result = subprocess.run(search_cmd, check=True, capture_output=True, text=True, env=search_env)
         if result.stdout:
             print(result.stdout)
         if result.stderr:
@@ -214,6 +223,38 @@ def _generate_msa_impl(
             result = output_a3m
             print(f"Returning path: {result}")
 
+        # Clean up intermediate files after successful completion
+        print(f"\nCleaning up temporary files...")
+        cleanup_paths = [
+            tmp_dir,  # ./tmp directory
+            query_db,  # query_db files
+            result_db,  # result_db files
+            msa_db,  # msa_db files
+            msa_dir,  # msa directory
+        ]
+
+        for path in cleanup_paths:
+            try:
+                if os.path.exists(path):
+                    if os.path.isdir(path):
+                        shutil.rmtree(path, ignore_errors=True)
+                        print(f"  Removed directory: {path}")
+                    else:
+                        # Remove database files (they have multiple extensions)
+                        base_path = path
+                        removed_files = []
+                        for ext in ['', '.index', '.dbtype', '.lookup', '.source', '_h', '_h.index', '_h.dbtype']:
+                            file_path = base_path + ext
+                            if os.path.exists(file_path):
+                                os.remove(file_path)
+                                removed_files.append(file_path)
+                        if removed_files:
+                            print(f"  Removed database files: {base_path}*")
+            except Exception as e:
+                print(f"  Warning: Failed to remove {path}: {e}")
+
+        print(f"Cleanup complete!\n")
+
         return result
 
     except subprocess.CalledProcessError as e:
@@ -236,6 +277,7 @@ def generate_msa(
     output_dir: Optional[str] = None,
     database_path: Optional[str] = None,
     gpu: bool = True,
+    cuda_device: Optional[int] = None,
     threads: int = 64,
     sensitivity: float = 7.5,
     num_iterations: int = 10,
@@ -251,6 +293,7 @@ def generate_msa(
         output_dir=output_dir,
         database_path=database_path,
         gpu=gpu,
+        cuda_device=cuda_device,
         threads=threads,
         sensitivity=sensitivity,
         num_iterations=num_iterations,
@@ -266,6 +309,7 @@ def generate_msa_from_file(
     output_dir: str,
     database_path: Optional[str] = None,
     gpu: bool = True,
+    cuda_device: Optional[int] = None,
     threads: int = 64,
     sensitivity: float = 7.5,
     num_iterations: int = 10,
@@ -284,6 +328,8 @@ def generate_msa_from_file(
         database_path: Path to the MMseqs2 database. If None, uses MMSEQS2_DB_PATH
                       environment variable or defaults to UniRef100 padded database.
         gpu: Use GPU acceleration for search (default: True).
+        cuda_device: CUDA device number to use (default: None, uses all available devices).
+                    Sets CUDA_VISIBLE_DEVICES environment variable during search.
         threads: Number of CPU threads to use (default: 64).
         sensitivity: Sensitivity parameter for search (default: 7.5).
         num_iterations: Number of search iterations (default: 10).
@@ -304,6 +350,7 @@ def generate_msa_from_file(
         output_dir=output_dir,
         database_path=database_path,
         gpu=gpu,
+        cuda_device=cuda_device,
         threads=threads,
         sensitivity=sensitivity,
         num_iterations=num_iterations,
