@@ -1,8 +1,21 @@
 # MMseqs2 MCP service
 
-## Install
+## Installation
 
-## Create conda environment
+### Quick Setup (Recommended)
+
+Run the automated setup script:
+
+```bash
+cd mmseqs2_mcp
+bash quick_setup.sh
+```
+
+The script will create the conda environment, install MMseqs2, and display the Claude Code configuration. See `quick_setup.sh --help` for options like `--skip-env`.
+
+### Manual Installation (Alternative)
+
+#### Create conda environment
 ```shell
 mamba env create -p ./env python=3.10 pip fastmcp
 mamba activate ./env
