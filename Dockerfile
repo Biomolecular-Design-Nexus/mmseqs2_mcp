@@ -26,7 +26,9 @@ RUN wget -q https://mmseqs.com/latest/mmseqs-linux-gpu.tar.gz \
 
 # Copy application source
 COPY src/ ./src/
+RUN chmod -R a+r /app/src/
 COPY examples/ ./examples/
+RUN chmod -R a+r /app/examples/
 
 # Create working directories
 RUN mkdir -p tmp/inputs tmp/outputs
